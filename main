@@ -177,7 +177,7 @@ cv::Mat histogrammRechner(const cv::Mat& bild, cv::Mat& rgb) {
         lokalesMin--;
     }
 
-// Zeichnen Sie die beiden gefundenen Werte als Balken in Ihr Histogrammbild ein
+// Aufgabenstellung: Zeichne beide gefundenen Werte als Balken in Histogrammbild ein
     cv::line(hist, cv::Point(ZwischenWert, 0), cv::Point(ZwischenWert, 750), cv::Scalar(0, 0, 255), 1);
     cv::line(hist, cv::Point(lokalesMin, 0), cv::Point(lokalesMin, 750), cv::Scalar(255, 0, 0), 1);
 
@@ -196,17 +196,13 @@ cv::Mat histogrammRechner(const cv::Mat& bild, cv::Mat& rgb) {
 
 
 
-// Optional. If set (true), the ColorCamera is downscaled from 1080p to 720p.
-// Otherwise (false), the aligned depth is automatically upscaled to 1080p
 static std::atomic<bool> downscaleColor{true};
 static constexpr int fps = 30;
-// The disparity is computed at this resolution, then upscaled to RGB resolution
 static constexpr auto monoRes = dai::MonoCameraProperties::SensorResolution::THE_720_P;
 
 static float rgbWeight = 0.4f;
 static float depthWeight = 0.6f;
 
-/*static void updateBlendWeights(int percentRgb, void* ctx) {
 rgbWeight = float(percentRgb) / 100.f;
 depthWeight = 1.f - rgbWeight;
 }
@@ -222,12 +218,11 @@ int main() {
         cin >> mode;
     }
 
-// Create pipeline
+// Pipeline erstellen für Device Zugriff
     dai::Pipeline pipeline;
     dai::Device device;
     std::vector<std::string> queueNames;
 
-// Define sources and outputs
     auto camRgb = pipeline.create<dai::node::ColorCamera>();
     auto left = pipeline.create<dai::node::MonoCamera>();
     auto right = pipeline.create<dai::node::MonoCamera>();
@@ -241,13 +236,11 @@ int main() {
     depthOut->setStreamName("depth");
     queueNames.push_back("depth");
 
-// Properties
+// Einstellungen wie FPS und Auflösung
     camRgb->setBoardSocket(dai::CameraBoardSocket::CAM_A);
     camRgb->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
     camRgb->setFps(fps);
     if(downscaleColor) camRgb->setIspScale(2, 3);
-// For now, RGB needs fixed focus to properly align with depth.
-// This value was used during calibration
     try {
         auto calibData = device.readCalibration2();
         auto lensPosition = calibData.getLensPosition(dai::CameraBoardSocket::CAM_A);
@@ -277,8 +270,6 @@ int main() {
     right->setFps(fps);
 
 
-// stereo->setDefaultProfilePreset(dai::node::StereoDepth::PresetMode::HIGH_DENSITY);
-// LR-check is required for depth alignment
     stereo->setLeftRightCheck(true);
     stereo->setDepthAlign(dai::CameraBoardSocket::CAM_A);
 
@@ -331,7 +322,7 @@ int main() {
                 break;
             imshow( "FrameRBG", frameRGB );
 
-// esc to exit
+// esc für exit
             char c=(char)cv::waitKey(25);
             if(c==27)
                 break;
@@ -345,10 +336,7 @@ int main() {
     }
 
 
-// Connect to device and start pipeline
     device.startPipeline(pipeline);
-
-// Sets queues size and behavior
     for(const auto& name : queueNames) {
         device.getOutputQueue(name, 4, false);
     }
@@ -388,14 +376,11 @@ aufDep.write(frame[name]);    if (latestPacket.find(name) != latestPacket.end())
                         frame[name] = latestPacket[name]->getFrame();
                         auto maxDisparity = stereo->initialConfig.getMaxDisparity();
                         stereo->setExtendedDisparity(true);
-// Optional, extend range 0..95 -> 0..255, for a better visualisation
 // if (1) frame[name].convertTo(frame[name], CV_8UC1, 255. / maxDisparity);
-// Optional, apply false colorization
 // if (1) cv::applyColorMap(frame[name], frame[name], cv::COLORMAP_JET);
                     } else {
                         frame[name] = latestPacket[name]->getCvFrame();
-}*/
-
+                    }*/
             }
 
             for(const auto& name : queueNames) {
@@ -459,9 +444,7 @@ aufDep.write(frame[name]);    if (latestPacket.find(name) != latestPacket.end())
                         frame[name] = latestPacket[name]->getFrame();
                         auto maxDisparity = stereo->initialConfig.getMaxDisparity();
                         stereo->setExtendedDisparity(true);
-// Optional, extend range 0..95 -> 0..255, for a better visualisation
 // if (1) frame[name].convertTo(frame[name], CV_8UC1, 255. / maxDisparity);
-// Optional, apply false colorization
 // if (1) cv::applyColorMap(frame[name], frame[name], cv::COLORMAP_JET);
                     } else {
                         frame[name] = latestPacket[name]->getCvFrame();
@@ -487,9 +470,9 @@ aufDep.write(frame[name]);    if (latestPacket.find(name) != latestPacket.end())
             }
 
 
-/* // Blend when both received
+/* // Nicht notwendig laut Aufgabenstellung aber Blending ist hilfreich
 if(frame.find(rgbWindowName) != frame.end() && frame.find(depthWindowName) != frame.end()) {
-// Need to have both frames in BGR format before blending
+// 
 if(frame[depthWindowName].channels() < 3) {
 cv::cvtColor(frame[depthWindowName], frame[depthWindowName], cv::COLOR_GRAY2BGR);
 }
